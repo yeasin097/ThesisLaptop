@@ -1,0 +1,50 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Report cache used by istanbul
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+fingerprints_raw/
+
+package-lock.json
+
+fingerprints_raw/
+nidserver/
+
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+newenv/
+*.egg-info/
+.installed.cfg
+*.egg
+
+*.bmp
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico

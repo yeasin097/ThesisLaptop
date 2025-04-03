@@ -1,0 +1,3 @@
+npm install @hyperledger/caliper-cli
+npx caliper bind --caliper-bind-sut fabric:2.5 --caliper-bind-cwd ./
+npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig network.json --caliper-benchconfig benchmark.yaml

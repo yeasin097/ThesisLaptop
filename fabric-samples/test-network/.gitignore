@@ -1,0 +1,27 @@
+# Generated crypto material
+organizations/fabric-ca/ordererOrg/*
+organizations/fabric-ca/org1/*
+organizations/fabric-ca/org2/*
+organizations/fabric-ca/org3/*
+organizations/ordererOrganizations/*
+organizations/peerOrganizations/*
+
+# Generated channel artifacts
+channel-artifacts/*
+*.tx
+*.block
+
+# System files
+.DS_Store
+*.swp
+*.swo
+
+# Log files
+*.log
+
+# Temporary files
+temp/
+
+# Ignore gz files
+*.gz
+

@@ -1,0 +1,14 @@
+test:
+  name: asset-transfer-benchmark
+  description: Benchmark for Fabric 2.5 test-network with asset-transfer-basic chaincode
+  workers:
+    number: 2
+  rounds:
+    - label: create-asset
+      txNumber: 1000
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 50
+      workload:
+        module: workload/invoke.js

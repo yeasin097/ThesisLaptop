@@ -1,0 +1,32 @@
+test:
+  name: Patient Registration Test
+  description: Test patient registration performance
+  workers:
+    type: local
+    number: 5
+  rounds:
+    - label: patient-registration
+      description: Test patient registration throughput
+      txDuration: 30
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 50
+      workload:
+        module: workload/invoke.js
+        arguments:
+          assets: 50
+          contractId: patient
+
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 1
+        containers:
+        - peer0.org1.example.com
+        - orderer.example.com
+
+observer:
+  type: local
+  interval: 1 
