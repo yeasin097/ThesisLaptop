@@ -31,49 +31,112 @@ function EhrDetails() {
     }
   };
 
-  if (!patient) return <div>No patient selected</div>;
+  if (!patient) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+        <h3 className="text-teal fw-semibold">No patient selected</h3>
+      </div>
+    );
+  }
 
   return (
-    <div className="container py-5">
-      <h2>Create EHR for {patient.name}</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="doctorId" className="form-label">Doctor ID</label>
-          <input
-            type="text"
-            className="form-control"
-            id="doctorId"
-            value={doctorId}
-            onChange={(e) => setDoctorId(e.target.value)}
-            required
-          />
+    <div className="min-vh-100 bg-light py-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="container">
+        <div className="card shadow-lg rounded-4 mx-auto" style={{ maxWidth: '600px', border: 'none' }}>
+          <div className="card-header bg-teal text-white rounded-top-4 p-4">
+            <h2 className="mb-0 fw-bold text-center">Create EHR for {patient.name}</h2>
+          </div>
+          <div className="card-body p-5">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4 position-relative">
+                <input
+                  type="text"
+                  className="form-control border-0 border-bottom py-2"
+                  id="doctorId"
+                  value={doctorId}
+                  onChange={(e) => setDoctorId(e.target.value)}
+                  required
+                  style={{ fontSize: '1.1rem', transition: 'all 0.3s' }}
+                />
+                <label
+                  htmlFor="doctorId"
+                  className="form-label position-absolute top-0 start-0 text-muted"
+                  style={{ transition: 'all 0.3s', transform: doctorId ? 'translateY(-20px)' : 'translateY(0)', fontSize: doctorId ? '0.9rem' : '1.1rem' }}
+                >
+                  Doctor ID
+                </label>
+              </div>
+              <div className="mb-4 position-relative">
+                <input
+                  type="text"
+                  className="form-control border-0 border-bottom py-2"
+                  id="hospitalId"
+                  value={hospitalId}
+                  onChange={(e) => setHospitalId(e.target.value)}
+                  required
+                  style={{ fontSize: '1.1rem', transition: 'all 0.3s' }}
+                />
+                <label
+                  htmlFor="hospitalId"
+                  className="form-label position-absolute top-0 start-0 text-muted"
+                  style={{ transition: 'all 0.3s', transform: hospitalId ? 'translateY(-20px)' : 'translateY(0)', fontSize: hospitalId ? '0.9rem' : '1.1rem' }}
+                >
+                  Hospital ID
+                </label>
+              </div>
+              <div className="mb-4 position-relative">
+                <input
+                  type="text"
+                  className="form-control border-0 border-bottom py-2"
+                  id="diagnosis"
+                  value={diagnosis}
+                  onChange={(e) => setDiagnosis(e.target.value)}
+                  required
+                  style={{ fontSize: '1.1rem', transition: 'all 0.3s' }}
+                />
+                <label
+                  htmlFor="diagnosis"
+                  className="form-label position-absolute top-0 start-0 text-muted"
+                  style={{ transition: 'all 0.3s', transform: diagnosis ? 'translateY(-20px)' : 'translateY(0)', fontSize: diagnosis ? '0.9rem' : '1.1rem' }}
+                >
+                  Diagnosis
+                </label>
+              </div>
+              <button
+                type="submit"
+                className="btn w-100 py-3 fw-semibold text-white"
+                style={{
+                  background: 'linear-gradient(90deg, #00c4cc, #007bff)',
+                  borderRadius: '8px',
+                  transition: 'transform 0.3s, box-shadow 0.3s',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.03)';
+                  e.target.style.boxShadow = '0 8px 20px rgba(0, 196, 204, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                Create EHR
+              </button>
+            </form>
+            {formSuccess && (
+              <div className="alert alert-success mt-4 d-flex align-items-center rounded-3" style={{ backgroundColor: '#e6f7f8', border: '1px solid #00c4cc' }}>
+                <i className="bi bi-check-circle-fill me-2 text-teal"></i>
+                <span>{formSuccess}</span>
+              </div>
+            )}
+            {formError && (
+              <div className="alert alert-danger mt-4 d-flex align-items-center rounded-3" style={{ backgroundColor: '#fce8e6', border: '1px solid #dc3545' }}>
+                <i className="bi bi-x-circle-fill me-2 text-danger"></i>
+                <span>{formError}</span>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="mb-3">
-          <label htmlFor="hospitalId" className="form-label">Hospital ID</label>
-          <input
-            type="text"
-            className="form-control"
-            id="hospitalId"
-            value={hospitalId}
-            onChange={(e) => setHospitalId(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="diagnosis" className="form-label">Diagnosis</label>
-          <input
-            type="text"
-            className="form-control"
-            id="diagnosis"
-            value={diagnosis}
-            onChange={(e) => setDiagnosis(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">Create EHR</button>
-      </form>
-      {formSuccess && <div className="alert alert-success mt-3">{formSuccess}</div>}
-      {formError && <div className="alert alert-danger mt-3">{formError}</div>}
+      </div>
     </div>
   );
 }

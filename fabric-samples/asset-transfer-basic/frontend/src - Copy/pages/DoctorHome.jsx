@@ -11,9 +11,9 @@ function DoctorHome() {
   const handlePatientList = () => setView('patient');
 
   return (
-    <div className="min-vh-100 bg-light" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="min-vh-100 bg-light" style={{ background: 'linear-gradient(135deg, #e9ecef, #d4edda)' }}>
       <Navbar onPatientList={handlePatientList} onCreateEhr={handleCreateEhr} />
-      <div className="container pt-5">
+      <div className="pt-5">
         {view === 'patient' && <PatientList />}
       </div>
     </div>

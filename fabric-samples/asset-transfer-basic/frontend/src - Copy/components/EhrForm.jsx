@@ -6,7 +6,7 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     diagnoses: [],
-    medications: [], // Back to simple array of medication strings
+    medications: [],
     test_results: {
       blood_pressure: '',
       allergy: '',
@@ -19,6 +19,7 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Expanded diagnosis options (50+)
   const diagnosisOptions = [
     'Tuberculosis', 'Influenza (Flu)', 'Diabetes Mellitus', 'Hypertension', 'Asthma',
     'Chronic Obstructive Pulmonary Disease (COPD)', 'Pneumonia', 'Bronchitis', 'Malaria', 'Dengue Fever',
@@ -33,6 +34,7 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
     'Cataract', 'Glaucoma', 'Conjunctivitis'
   ];
 
+  // Expanded medication options (50+)
   const medicationOptions = [
     'Ranitidine 150mg', 'Chloroquine 250mg', 'Metformin 500mg', 'Amlodipine 5mg', 'Paracetamol 500mg',
     'Ibuprofen 400mg', 'Aspirin 75mg', 'Losartan 50mg', 'Atorvastatin 20mg', 'Simvastatin 40mg',
@@ -67,16 +69,9 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
   };
 
   const handleAddMedication = (medication) => {
-    if (medication && !formData.medications.includes(medication)) {
-      setFormData((prev) => ({ ...prev, medications: [...prev.medications, medication] }));
+    if (medication && !formData.medications.some(med => med[0] === medication)) {
+      setFormData((prev) => ({ ...prev, medications: [...prev.medications, [medication]] }));
     }
-  };
-
-  const handleRemoveMedication = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      medications: prev.medications.filter((_, i) => i !== index)
-    }));
   };
 
   const handleFingerprintChange = (e) => {
@@ -88,15 +83,16 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
     setStatusMessage('');
     setLoading(true);
 
-    const currentDate = new Date().toISOString().split('T')[0];
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
     const ehrDetails = {
-      visit_date: currentDate,
+      visit_date: currentDate, // Automatically set to current date
       address: patient?.address || 'Unknown',
       blood_group: patient?.blood_group || 'Unknown***',
       date_of_birth: patient?.date_of_birth || 'Unknown',
       gender: patient?.gender || 'Unknown',
       diagnosis: formData.diagnoses.join(', ') || 'None',
-      medications: formData.medications.map(med => [med]), // Wrap each medication in an array for backend compatibility
+      medications: formData.medications.length > 0 ? formData.medications : [],
       test_results: formData.test_results,
       notes: formData.notes || '',
     };
@@ -129,7 +125,9 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
         findData.append('fingerprint', fingerprint);
 
         try {
-          const findResponse = await axios.post('http://localhost:8000/patient/find', findData, { timeout: 30000 });
+          const findResponse = await axios.post('http://localhost:8000/patient/find', findData, {
+            timeout: 30000,
+          });
           const patientInfo = JSON.parse(findResponse.data.patient_info);
           ehrDetails.address = patientInfo.address;
           ehrDetails.blood_group = patientInfo.blood_group;
@@ -149,7 +147,9 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
       data.append('ehr_details', JSON.stringify(ehrDetails));
 
       try {
-        const response = await axios.post('http://localhost:8000/ehr/create', data, { timeout: 30000 });
+        const response = await axios.post('http://localhost:8000/ehr/create', data, {
+          timeout: 30000,
+        });
         setStatusMessage(`✅ EHR created successfully | Response: ${JSON.stringify(response.data)}`);
         setFormData({
           diagnoses: [],
@@ -169,7 +169,7 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
 
   if (!doctorId || !hospitalId) {
     return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
         <div className="text-center">
           <h2 className="text-danger fw-bold">Missing Required Data</h2>
           <p className="text-muted">Doctor ID and Hospital ID are required to create an EHR.</p>
@@ -178,66 +178,44 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
     );
   }
 
-  const currentDate = new Date().toISOString().split('T')[0];
+  const currentDate = new Date().toISOString().split('T')[0]; // For display purposes
 
   return (
-    <div className="min-vh-100 bg-light py-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="min-vh-100 bg-light py-5" style={{ background: 'linear-gradient(135deg, #e9ecef, #d4edda)' }}>
       <div className="container">
-        <div className="card shadow-lg rounded-4 mx-auto border-0" style={{ maxWidth: '800px' }}>
-          <div className="card-header bg-teal text-white rounded-top-4 p-4">
-            <h2 className="mb-0 fw-bold text-center text-black">Create Electronic Health Record</h2>
-          </div>
-          <div className="card-body p-5">
+        <div className="card border-0 shadow mx-auto" style={{ maxWidth: '700px' }}>
+          <div className="card-body p-4">
+            <h2 className="card-title text-success fw-bold text-center mb-4">Create Electronic Health Record</h2>
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="form-label fw-medium text-muted"><i className="bi bi-person-fill me-2 text-teal"></i>Doctor ID</label>
-                <input
-                  type="text"
-                  className="form-control border-0 bg-light py-3 rounded-3"
-                  value={doctorId}
-                  disabled
-                  style={{ fontSize: '1.1rem' }}
-                />
+              <div className="mb-3">
+                <label className="form-label fw-medium text-muted">Doctor ID</label>
+                <input type="text" className="form-control form-control-lg rounded-pill bg-light" value={doctorId} disabled />
               </div>
-              <div className="mb-4">
-                <label className="form-label fw-medium text-muted"><i className="bi bi-hospital-fill me-2 text-teal"></i>Hospital ID</label>
-                <input
-                  type="text"
-                  className="form-control border-0 bg-light py-3 rounded-3"
-                  value={hospitalId}
-                  disabled
-                  style={{ fontSize: '1.1rem' }}
-                />
+              <div className="mb-3">
+                <label className="form-label fw-medium text-muted">Hospital ID</label>
+                <input type="text" className="form-control form-control-lg rounded-pill bg-light" value={hospitalId} disabled />
               </div>
               {nidNo && (
-                <div className="mb-4">
-                  <label className="form-label fw-medium text-muted"><i className="bi bi-fingerprint me-2 text-teal"></i>NID Number</label>
-                  <input
-                    type="text"
-                    className="form-control border-0 bg-light py-3 rounded-3"
-                    value={nidNo}
-                    disabled
-                    style={{ fontSize: '1.1rem' }}
-                  />
+                <div className="mb-3">
+                  <label className="form-label fw-medium text-muted">NID Number</label>
+                  <input type="text" className="form-control form-control-lg rounded-pill bg-light" value={nidNo} disabled />
                 </div>
               )}
-              <div className="mb-4">
-                <label className="form-label fw-medium text-muted"><i className="bi bi-calendar-fill me-2 text-teal"></i>Visit Date</label>
+              <div className="mb-3">
+                <label className="form-label fw-medium text-muted">Visit Date</label>
                 <input
                   type="text"
-                  className="form-control border-0 bg-light py-3 rounded-3"
+                  className="form-control form-control-lg rounded-pill bg-light"
                   value={currentDate}
                   disabled
-                  style={{ fontSize: '1.1rem' }}
                 />
               </div>
-              <div className="mb-4">
-                <label className="form-label fw-medium text-muted"><i className="bi bi-clipboard-fill me-2 text-teal"></i>Diagnoses</label>
+              <div className="mb-3">
+                <label className="form-label fw-medium text-muted">Diagnoses</label>
                 <select
-                  className="form-select py-3 rounded-3 mb-2"
+                  className="form-select form-select-lg rounded-pill mb-2"
                   onChange={(e) => handleAddDiagnosis(e.target.value)}
                   defaultValue=""
-                  style={{ fontSize: '1.1rem' }}
                 >
                   <option value="" disabled>Select a diagnosis</option>
                   {diagnosisOptions.map((option, index) => (
@@ -249,8 +227,8 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
                     {formData.diagnoses.map((diag, index) => (
                       <span
                         key={index}
-                        className="badge py-2 px-3 rounded-pill fw-normal"
-                        style={{ backgroundColor: '#007bff', color: 'white', fontSize: '0.9rem' }}
+                        className="badge bg-primary text-white fw-normal py-2 px-3 rounded-pill"
+                        style={{ fontSize: '0.9rem', backgroundColor: '#007bff' }}
                       >
                         {diag}
                       </span>
@@ -258,13 +236,12 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
                   </div>
                 )}
               </div>
-              <div className="mb-4">
-                <label className="form-label fw-medium text-muted"><i className="bi bi-capsule me-2 text-teal"></i>Medications</label>
+              <div className="mb-3">
+                <label className="form-label fw-medium text-muted">Medications</label>
                 <select
-                  className="form-select py-3 rounded-3 mb-2"
+                  className="form-select form-select-lg rounded-pill mb-2"
                   onChange={(e) => handleAddMedication(e.target.value)}
                   defaultValue=""
-                  style={{ fontSize: '1.1rem' }}
                 >
                   <option value="" disabled>Select a medication</option>
                   {medicationOptions.map((option, index) => (
@@ -272,104 +249,84 @@ function EhrForm({ doctorId, hospitalId, nidNo, patient }) {
                   ))}
                 </select>
                 {formData.medications.length > 0 && (
-                  <div className="mt-2">
+                  <div className="d-flex flex-wrap gap-2 mt-2">
                     {formData.medications.map((med, index) => (
-                      <div key={index} className="d-flex align-items-center gap-2 mb-2">
-                        <span
-                          className="badge py-2 px-3 rounded-pill fw-normal"
-                          style={{ backgroundColor: '#00c4cc', color: 'white', fontSize: '0.9rem' }}
-                        >
-                          {med}
-                        </span>
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm rounded-circle"
-                          onClick={() => handleRemoveMedication(index)}
-                          style={{ width: '24px', height: '24px', padding: '0', lineHeight: '1' }}
-                        >
-                          <i className="bi bi-x"></i>
-                        </button>
-                      </div>
+                      <span
+                        key={index}
+                        className="badge bg-success text-white fw-normal py-2 px-3 rounded-pill"
+                        style={{ fontSize: '0.9rem', backgroundColor: '#28a745' }}
+                      >
+                        {med[0]}
+                      </span>
                     ))}
                   </div>
                 )}
               </div>
-              <div className="mb-4">
-                <label className="form-label fw-medium text-muted"><i className="bi bi-heart-pulse-fill me-2 text-teal"></i>Test Results</label>
+              <div className="mb-3">
+                <label className="form-label fw-medium text-muted">Test Results</label>
                 <input
                   type="text"
-                  className="form-control border-0 border-bottom py-3 mb-3"
+                  className="form-control form-control-lg rounded-pill mb-2"
                   name="test_results.blood_pressure"
                   value={formData.test_results.blood_pressure}
                   onChange={handleInputChange}
                   placeholder="Blood Pressure (e.g., 135/90)"
-                  style={{ fontSize: '1.1rem' }}
                 />
                 <input
                   type="text"
-                  className="form-control border-0 border-bottom py-3 mb-3"
+                  className="form-control form-control-lg rounded-pill mb-2"
                   name="test_results.allergy"
                   value={formData.test_results.allergy}
                   onChange={handleInputChange}
                   placeholder="Allergy (e.g., Shellfish)"
-                  style={{ fontSize: '1.1rem' }}
                 />
                 <input
                   type="text"
-                  className="form-control border-0 border-bottom py-3"
+                  className="form-control form-control-lg rounded-pill"
                   name="test_results.cholesterol"
                   value={formData.test_results.cholesterol}
                   onChange={handleInputChange}
                   placeholder="Cholesterol (e.g., 250 mg/dL)"
-                  style={{ fontSize: '1.1rem' }}
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="notes" className="form-label fw-medium text-muted"><i className="bi bi-chat-square-text-fill me-2 text-teal"></i>Comments</label>
+                <label htmlFor="notes" className="form-label fw-medium text-muted">Comments</label>
                 <textarea
-                  className="form-control rounded-3 py-3"
+                  className="form-control rounded-3"
                   id="notes"
                   name="notes"
                   value={formData.notes}
                   onChange={handleInputChange}
-                  rows="4"
+                  rows="3"
                   placeholder="e.g., Advised to quit smoking and avoid alcohol."
-                  style={{ fontSize: '1.1rem', border: '1px solid #e9ecef' }}
                 />
               </div>
               {!nidNo && (
                 <div className="mb-4">
-                  <label htmlFor="fingerprint" className="form-label fw-medium text-muted"><i className="bi bi-fingerprint me-2 text-teal"></i>Fingerprint Image</label>
+                  <label htmlFor="fingerprint" className="form-label fw-medium text-muted">Fingerprint Image</label>
                   <input
                     type="file"
-                    className="form-control py-3 rounded-3"
+                    className="form-control"
                     id="fingerprint"
                     accept=".bmp"
                     onChange={handleFingerprintChange}
                     ref={fileInputRef}
-                    style={{ fontSize: '1.1rem' }}
                   />
                 </div>
               )}
               <button
                 type="submit"
-                className="btn w-100 py-3 fw-semibold text-white"
+                className="btn btn-success w-100 py-2 fw-medium rounded-pill"
                 disabled={loading}
-                style={{
-                  background: 'linear-gradient(90deg, #00c4cc, #007bff)',
-                  borderRadius: '8px',
-                  transition: 'transform 0.3s, box-shadow 0.3s',
-                }}
-                onMouseEnter={(e) => !loading && (e.target.style.transform = 'scale(1.03)', e.target.style.boxShadow = '0 8px 20px rgba(0, 196, 204, 0.3)')}
-                onMouseLeave={(e) => !loading && (e.target.style.transform = 'scale(1)', e.target.style.boxShadow = 'none')}
+                style={{ transition: 'all 0.3s' }}
+                onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#218838')}
+                onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#28a745')}
               >
                 {loading ? 'Submitting...' : 'Create EHR'}
               </button>
             </form>
             {statusMessage && (
-              <div className={`alert mt-4 shadow-sm rounded-3 d-flex align-items-center ${statusMessage.includes('❌') ? 'alert-danger' : 'alert-success'}`}
-                style={{ backgroundColor: statusMessage.includes('❌') ? '#fce8e6' : '#e6f7f8', border: statusMessage.includes('❌') ? '1px solid #dc3545' : '1px solid #00c4cc' }}>
-                <i className={`bi ${statusMessage.includes('❌') ? 'bi-x-circle-fill text-danger' : 'bi-check-circle-fill text-teal'} me-2`}></i>
+              <div className={`alert mt-4 shadow-sm ${statusMessage.includes('❌') ? 'alert-danger' : 'alert-success'}`}>
                 {statusMessage}
               </div>
             )}
